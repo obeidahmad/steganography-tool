@@ -6,6 +6,8 @@ def encode(cover_path: str, data_to_hide: str, stego_path: str):
     #  The predefined position should also be of predefined length so it be read everytime.
     #  We may also use that position to store more information, like the name of the file that is being hidden.
     #  Or at least the extension of the file.
+
+    # Todo: Option to save the bits in different positions or even in equi-distribution
     i = 0
     with Image.open(cover_path) as img:
         width, height = img.size
