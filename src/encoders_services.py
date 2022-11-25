@@ -1,6 +1,7 @@
 import os
 
 from encoders_decoders import least_significant_bit as lsb
+from utils.custom_exceptions import IncorrectFileTypeException
 from utils.utilities import file_to_binary, string_to_binary
 
 
@@ -12,7 +13,11 @@ def least_significant_bit_encode(cover_path: str, data: str, stego_path: str, fi
     else:
         binary_data = string_to_binary(data)
 
-    # Todo: check stego_path if it ends with ".png"
+    # Todo: Study the capability of supporting other file formats
+    if not stego_path.endswith(".png"):
+        raise IncorrectFileTypeException("Stego File name should be a png")
+    os.makedirs(os.path.dirname(stego_path), exist_ok=True)
+
     lsb.encode(cover_path, binary_data, stego_path)
 
 
