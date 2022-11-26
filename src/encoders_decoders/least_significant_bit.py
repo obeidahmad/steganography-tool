@@ -14,16 +14,19 @@ def encode(cover_path: str, data_to_hide: str, stego_path: str):
             raise Exception("Stego data length is bigger than cover image capacity")
         header: str = int_to_binary(data_length, header_length)
 
-        final_data: str = data_to_hide + header
+        final_data: str = header + data_to_hide
         i = 0
         for x in range(width):
             for y in range(height):
                 pixel = list(img.getpixel((x, y)))
                 for n in range(3):
-                    pixel[n] = pixel[n] & ~1 | int(final_data[i])
-                    i += 1
+                    if i < len(final_data):
+                        pixel[n] = pixel[n] & ~1 | int(final_data[i])
+                        i += 1
+                    else:
+                        img.save(stego_path, "PNG")
+                        return
                 img.putpixel((x, y), tuple(pixel))
-        img.save(stego_path, "PNG")
 
 
 def decode(stego_path: str) -> str:
@@ -35,6 +38,7 @@ def decode(stego_path: str) -> str:
         data_length: int = 0
 
         i = 0
+        j = 0
         for x in range(width):
             for y in range(height):
                 pixel = list(img.getpixel((x, y)))
@@ -44,9 +48,9 @@ def decode(stego_path: str) -> str:
                         i += 1
                         if i == header_length:
                             data_length = binary_to_int(header)
-                            i = 0
-                    elif i < data_length:
+                    elif j < data_length:
                         data += str(pixel[n] & 1)
+                        j += 1
                     else:
                         return data
 

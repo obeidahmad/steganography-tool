@@ -34,7 +34,7 @@ def file_to_binary(file_path: str) -> str:
         bin_data: bytes = f.read()
         hex_dump: str = bin_data.hex()
         integer: int = int(hex_dump, 16)
-        return bin(integer)
+        return bin(integer)[2:]
 
 
 def binary_to_file(file_path: str, binary: str):
