@@ -1,36 +1,66 @@
 from PIL import Image
 
+from utils.utilities import int_to_binary, binary_to_int
+
 
 def encode(cover_path: str, data_to_hide: str, stego_path: str):
-    # Todo: Get the length of data and save the length in a predefined position to be discussed.
-    #  The predefined position should also be of predefined length so it be read everytime.
-    #  We may also use that position to store more information, like the name of the file that is being hidden.
-    #  Or at least the extension of the file.
-
     # Todo: Option to save the bits in different positions or even in equi-distribution
-    i = 0
     with Image.open(cover_path) as img:
         width, height = img.size
+        header_length: int = _define_header_length(width, height)
+        data_length: int = len(data_to_hide)
+        # Todo: create custom exception for the case
+        if not _is_data_length_allowed(width, height, data_length, header_length):
+            raise Exception("Stego data length is bigger than cover image capacity")
+        header: str = int_to_binary(data_length, header_length)
+
+        final_data: str = data_to_hide + header
+        i = 0
         for x in range(width):
             for y in range(height):
                 pixel = list(img.getpixel((x, y)))
                 for n in range(3):
-                    if i < len(data_to_hide):
-                        pixel[n] = pixel[n] & ~1 | int(data_to_hide[i])
-                        i += 1
+                    pixel[n] = pixel[n] & ~1 | int(final_data[i])
+                    i += 1
                 img.putpixel((x, y), tuple(pixel))
         img.save(stego_path, "PNG")
 
 
 def decode(stego_path: str) -> str:
-    extracted_bin = []
+    data = ""
+    header = ""
     with Image.open(stego_path) as img:
         width, height = img.size
-        byte = []
-        for x in range(0, width):
-            for y in range(0, height):
+        header_length: int = _define_header_length(width, height)
+        data_length: int = 0
+
+        i = 0
+        for x in range(width):
+            for y in range(height):
                 pixel = list(img.getpixel((x, y)))
-                for n in range(0, 3):
-                    extracted_bin.append(pixel[n] & 1)
-    data = "".join([str(x) for x in extracted_bin])
-    return data
+                for n in range(3):
+                    if i < header_length:
+                        header = header + str(pixel[n] & 1)
+                        i += 1
+                        if i == header_length:
+                            data_length = binary_to_int(header)
+                            i = 0
+                    elif i < data_length:
+                        data += str(pixel[n] & 1)
+                    else:
+                        return data
+
+
+def _define_header_length(image_width: int, image_height: int) -> int:
+    image_dimension: int = image_width * image_height
+    max_data_size: int = image_dimension * 3
+    header_length: int = len(int_to_binary(max_data_size))
+    return header_length
+
+
+def _is_data_length_allowed(image_width: int, image_height: int, data_length: int, header_length: int = None) -> bool:
+    if not header_length:
+        header_length = _define_header_length(image_width, image_height)
+    image_dimension: int = image_width * image_height
+    max_data_length: int = (image_dimension * 3) - header_length
+    return data_length <= max_data_length
