@@ -1,9 +1,9 @@
 def int_to_binary(integer: int, binary_length: int = None) -> str:
     if not binary_length:
-        binary = format(integer, 'b')
+        binary = format(integer, "b")
     else:
         # Todo: should we raise an Exception ?
-        binary = format(integer, f'0{binary_length}b')
+        binary = format(integer, f"0{binary_length}b")
         if len(binary) > binary_length:
             print(f"Warning: The binary string is longer than precised binary_length={binary_length}")
             print("Proceeding anyway!")
@@ -23,7 +23,7 @@ def string_to_binary(string: str) -> str:
 
 def binary_to_string(binary) -> str:
     message = ""
-    for c in [binary[i:i + 8] for i in range(0, len(binary), 8)]:
+    for c in [binary[i : i + 8] for i in range(0, len(binary), 8)]:
         ascii_c = int(c, 2)
         message += chr(ascii_c)
     return message
