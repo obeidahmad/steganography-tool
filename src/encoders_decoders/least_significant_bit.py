@@ -1,5 +1,6 @@
 from PIL import Image
 
+from utils.custom_exceptions import DataTooLongException
 from utils.utilities import int_to_binary, binary_to_int
 
 
@@ -9,9 +10,8 @@ def encode(cover_path: str, data_to_hide: str, stego_path: str):
         width, height = img.size
         header_length: int = _define_header_length(width, height)
         data_length: int = len(data_to_hide)
-        # Todo: create custom exception for the case
         if not _is_data_length_allowed(width, height, data_length, header_length):
-            raise Exception("Stego data length is bigger than cover image capacity")
+            raise DataTooLongException("Stego data length is bigger than cover image capacity")
         header: str = int_to_binary(data_length, header_length)
 
         final_data: str = header + data_to_hide
