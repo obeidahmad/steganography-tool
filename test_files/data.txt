@@ -1,0 +1,6 @@
+Health care is one of the domains where computer vision and object detection have played
+important role in recent years. Computer vision can be utilized in health care to automate and aid
+in the diagnosis and analysis of some medical imagery. One example of this application is the
+detection of Pneumonia in the chest X-Ray, other applications of computer vision are in MRI
+(Magnetic Resonance Imaging) where computer vision models help doctors to automate the
+segmentation/localization of region of interest in the image.
