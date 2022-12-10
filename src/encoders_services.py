@@ -1,7 +1,7 @@
 import os
 
 from encoders_decoders import least_significant_bit as lsb
-from utils.custom_exceptions import IncorrectFileTypeException
+from utils.custom_exceptions import IncorrectFileTypeException, MissingParameterException
 from utils.utilities import file_to_binary, string_to_binary, binary_to_string, binary_to_file
 
 
@@ -26,7 +26,6 @@ def least_significant_bit_decode(stego_path: str, result_file_path: str = None):
     if binary.startswith("0"):
         return binary_to_string(binary[1:])
     else:
-        # Todo: Create Custom Exception
         if not result_file_path:
-            raise Exception("Please provide path for result file")
+            raise MissingParameterException("Please provide path for result file")
         binary_to_file(result_file_path, binary[1:])
