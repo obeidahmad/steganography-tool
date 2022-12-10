@@ -43,7 +43,7 @@ The steps for decoding are the same but in reverse.
 |:--:| 
 | **Figure 2:** *Image of size 12x12px* |
 
-Calculating the header for the image above would be as following:
+Calculating the header for the image above (**figure 2**) would be as following:
 
 - w\*h\*3 = 12\*12\*3 = 432 bits
 - binary(432) = 1 1011 0000
@@ -54,6 +54,4 @@ In addition, the maximal data size that can be hidden in this image is 432 - 9 -
 
 ## TODO
 
-1. Use numpy like [this article](https://medium.com/swlh/lsb-image-steganography-using-python-2bbbee2c69a2)
-2. Add an equidistant LSB technic
-3. Read [An Enhanced Least Significant Bit Steganography Method Using Midpoint Circle Approach](https://drive.google.com/file/d/1ElOvCFtjC5TPs9mUzla7P0DiQA2c1Irw/view?usp=sharing)
+1. Read [An Enhanced Least Significant Bit Steganography Method Using Midpoint Circle Approach](https://drive.google.com/file/d/1ElOvCFtjC5TPs9mUzla7P0DiQA2c1Irw/view?usp=sharing)

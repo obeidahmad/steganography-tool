@@ -15,18 +15,11 @@ def binary_to_int(binary: str) -> int:
 
 
 def string_to_binary(string: str) -> str:
-    binary = ""
-    for c in string:
-        binary = binary + int_to_binary(ord(c), 8)
-    return binary
+    return "".join(int_to_binary(ord(c), 8) for c in string)
 
 
 def binary_to_string(binary) -> str:
-    message = ""
-    for c in [binary[i : i + 8] for i in range(0, len(binary), 8)]:
-        ascii_c = int(c, 2)
-        message += chr(ascii_c)
-    return message
+    return "".join([chr(int(c, 2)) for c in [binary[i : i + 8] for i in range(0, len(binary), 8)]])
 
 
 def file_to_binary(file_path: str) -> str:
