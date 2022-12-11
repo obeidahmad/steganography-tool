@@ -27,10 +27,15 @@ def encode(cover_path: str, data_to_hide: str, stego_path: str, encode_type: Enc
     """
     with Image.open(cover_path) as img:
         width, height = img.size
-        header_length: int = _define_header_length(image_width=width, image_height=height)
+        nb_channels: int = len(img.mode)
+        header_length: int = _define_header_length(image_width=width, image_height=height, nb_channels=nb_channels)
         data_length: int = len(data_to_hide)
         if not _is_data_length_allowed(
-            image_width=width, image_height=height, data_length=data_length, header_length=header_length
+            image_width=width,
+            image_height=height,
+            nb_channels=nb_channels,
+            data_length=data_length,
+            header_length=header_length,
         ):
             raise DataTooLongException("Stego data length is bigger than cover image capacity")
         header: str = int_to_binary(data_length, header_length)
@@ -41,6 +46,7 @@ def encode(cover_path: str, data_to_hide: str, stego_path: str, encode_type: Enc
                 positions: list[tuple] = _get_positions(
                     image_width=width,
                     image_height=height,
+                    nb_channels=nb_channels,
                     header_length=header_length,
                     with_header=True,
                     original_data_length=data_length,
@@ -50,12 +56,17 @@ def encode(cover_path: str, data_to_hide: str, stego_path: str, encode_type: Enc
                 positions: list[tuple] = _get_positions(
                     image_width=width,
                     image_height=height,
+                    nb_channels=nb_channels,
                     header_length=header_length,
                     with_header=True,
                     original_data_length=data_length,
                     final_data=final_data,
                     space_between_bits=_define_equidistant_space(
-                        image_width=width, image_height=height, data_length=data_length, header_length=header_length
+                        image_width=width,
+                        image_height=height,
+                        nb_channels=nb_channels,
+                        data_length=data_length,
+                        header_length=header_length,
                     ),
                 )
         for w, h, rgb, b in positions:
@@ -84,11 +95,16 @@ def decode(stego_path: str, encode_type: EncodeType) -> str:
     """
     with Image.open(stego_path) as img:
         width, height = img.size
+        nb_channels: int = len(img.mode)
         header_length: int = _define_header_length(width, height)
 
         header_in_binary: str = ""
         header_positions: list[tuple] = _get_positions(
-            image_width=width, image_height=height, header_length=header_length, with_header=True
+            image_width=width,
+            image_height=height,
+            nb_channels=nb_channels,
+            header_length=header_length,
+            with_header=True,
         )
         for w, h, rgb in header_positions:
             pixel = img.getpixel((w, h))
@@ -101,6 +117,7 @@ def decode(stego_path: str, encode_type: EncodeType) -> str:
                 data_positions: list[tuple] = _get_positions(
                     image_width=width,
                     image_height=height,
+                    nb_channels=nb_channels,
                     header_length=header_length,
                     with_header=False,
                     original_data_length=data_length,
@@ -109,11 +126,16 @@ def decode(stego_path: str, encode_type: EncodeType) -> str:
                 data_positions: list[tuple] = _get_positions(
                     image_width=width,
                     image_height=height,
+                    nb_channels=nb_channels,
                     header_length=header_length,
                     with_header=False,
                     original_data_length=data_length,
                     space_between_bits=_define_equidistant_space(
-                        image_width=width, image_height=height, data_length=data_length, header_length=header_length
+                        image_width=width,
+                        image_height=height,
+                        nb_channels=nb_channels,
+                        data_length=data_length,
+                        header_length=header_length,
                     ),
                 )
         for w, h, rgb in data_positions:
@@ -122,7 +144,7 @@ def decode(stego_path: str, encode_type: EncodeType) -> str:
         return data_in_binary
 
 
-def _define_header_length(image_width: int, image_height: int) -> int:
+def _define_header_length(image_width: int, image_height: int, nb_channels: int) -> int:
     """
     Defines the length of the header depending on the image width and height
 
@@ -130,6 +152,7 @@ def _define_header_length(image_width: int, image_height: int) -> int:
     ----------
     image_width: Width of the image
     image_height: Height of the image
+    nb_channels: Number of channels in the image
 
     Returns
     -------
@@ -137,12 +160,14 @@ def _define_header_length(image_width: int, image_height: int) -> int:
 
     """
     image_dimension: int = image_width * image_height
-    max_data_size: int = image_dimension * 3
+    max_data_size: int = image_dimension * nb_channels
     header_length: int = len(int_to_binary(max_data_size))
     return header_length
 
 
-def _is_data_length_allowed(image_width: int, image_height: int, data_length: int, header_length: int) -> bool:
+def _is_data_length_allowed(
+    image_width: int, image_height: int, nb_channels: int, data_length: int, header_length: int
+) -> bool:
     """
     Checks if the data to hide length in binary can fit in the image
 
@@ -150,6 +175,7 @@ def _is_data_length_allowed(image_width: int, image_height: int, data_length: in
     ----------
     image_width: Width of the image
     image_height: Height of the image
+    nb_channels: Number of channels in the image
     data_length: Length of binary data to hide
     header_length: Calculated Length of the header
 
@@ -159,11 +185,13 @@ def _is_data_length_allowed(image_width: int, image_height: int, data_length: in
 
     """
     image_dimension: int = image_width * image_height
-    max_data_length: int = (image_dimension * 3) - header_length
+    max_data_length: int = (image_dimension * nb_channels) - header_length
     return data_length <= max_data_length
 
 
-def _define_equidistant_space(image_width: int, image_height: int, data_length: int, header_length: int) -> int:
+def _define_equidistant_space(
+    image_width: int, image_height: int, nb_channels: int, data_length: int, header_length: int
+) -> int:
     """
     Calculates the space between each bit for Equi_Distribution LSB
     Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md/#equi-distribution-lsb
@@ -173,6 +201,7 @@ def _define_equidistant_space(image_width: int, image_height: int, data_length: 
     ----------
     image_width: Width of the image
     image_height: Height of the image
+    nb_channels: Number of channels in the image
     data_length: Length of binary data to hide
     header_length: Calculated Length of the header
 
@@ -182,7 +211,7 @@ def _define_equidistant_space(image_width: int, image_height: int, data_length: 
 
     """
     image_dimension: int = image_width * image_height
-    max_data_length: int = (image_dimension * 3) - header_length
+    max_data_length: int = (image_dimension * nb_channels) - header_length
     space_between_bits: int = max_data_length // data_length
     return space_between_bits
 
@@ -190,6 +219,7 @@ def _define_equidistant_space(image_width: int, image_height: int, data_length: 
 def _get_positions(
     image_width: int,
     image_height: int,
+    nb_channels: int,
     header_length: int,
     with_header: bool,
     original_data_length: int = 0,
@@ -203,6 +233,7 @@ def _get_positions(
     ----------
     image_width: Width of the image
     image_height: Height of the image
+    nb_channels: Number of channels in the image
     header_length: Calculated Length of the header
     with_header: Boolean to specify if the position of the header bit are to be returned
     original_data_length (optional): Length of binary data to hide (without header)
@@ -228,15 +259,17 @@ def _get_positions(
         positions.extend(range(header_length))
     if original_data_length > 0:
         positions.extend(
-            range(header_length, (image_height * image_width * 3) + 1, space_between_bits)[:original_data_length]
+            range(header_length, (image_height * image_width * nb_channels) + 1, space_between_bits)[
+                :original_data_length
+            ]
         )
     if not positions:
         raise MissingParameterException("Positions empty!!! Please include with_header or/and original_data_length.")
 
     height_positions: list[int] = [p // (image_width * 3) for p in positions]
     width_rgb_positions: list[int] = [abs(p - (image_width * 3 * h)) for p, h in zip(positions, height_positions)]
-    width_positions: list[int] = [w // 3 for w in width_rgb_positions]
-    rgb_positions: list[int] = [w % 3 for w in width_rgb_positions]
+    width_positions: list[int] = [w // nb_channels for w in width_rgb_positions]
+    rgb_positions: list[int] = [w % nb_channels for w in width_rgb_positions]
 
     if final_data:
         final_data_int: list[int] = [int(x) for x in final_data]
