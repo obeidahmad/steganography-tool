@@ -164,11 +164,10 @@ def _is_data_length_allowed(image_width: int, image_height: int, data_length: in
 
 
 def _define_equidistant_space(image_width: int, image_height: int, data_length: int, header_length: int) -> int:
-    # todo: change link below to equidistant
     """
     Calculates the space between each bit for Equi_Distribution LSB
-    Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md for
-        more info about equidistant LSB
+    Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md/#equi-distribution-lsb
+        for more info about equidistant LSB
 
     Parameters
     ----------

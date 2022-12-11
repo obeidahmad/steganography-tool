@@ -25,10 +25,6 @@ and convert it back to ASCII characters to get the hidden message.
 
 ## How are we implementing it?
 
-Our tool offers `Simple Inline LSB Steganography` as explained above.
-
-### Simple Inline LSB:
-
 The steps for encoding are the following:
 1. Take any image supported by pillow python package as input
 2. Calculate the header space with the following: header_size = length(binary(w\*h\*3))
@@ -52,7 +48,24 @@ Calculating the header for the image above (**figure 2**) would be as following:
 
 In addition, the maximal data size that can be hidden in this image is 432 - 9 - 1 = 422 bits
 
+### Inline LSB:
+
+Our tool offers `Simple Inline LSB Steganography`.
+Similar to what was explained before, we loop on each pixel individually and each channel in that pixel to change the LSB of that channel.
+
+### Equi-Distribution LSB
+
+The tool offers as well Equi-Distribution LSB.
+Instead of hiding the data inline (pixel after pixel, color after color), we distribute the data.
+Figuratively, the image is transformed into a matrix of width = image_width * 3 and height = image_height.
+After figuring the space taken for the header (which is always stored at the start of the image)
+we calculate the space needed for equi-distribution between each bit.
+From there the position of each bit is calculated and placed in the matrix.
+The matrix is then translated to a series of coordinates for row, column and rgb position.
+Each coordinate represents the pixel and channel in which a bit is hidden.
+
+Same calculations are used for decoding.
+
 ## TODO
 
-1. Write and explain Equidistant LSB
 1. Read [An Enhanced Least Significant Bit Steganography Method Using Midpoint Circle Approach](https://drive.google.com/file/d/1ElOvCFtjC5TPs9mUzla7P0DiQA2c1Irw/view?usp=sharing)
