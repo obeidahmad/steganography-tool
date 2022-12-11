@@ -9,5 +9,5 @@ class DataTooLongException(Exception):
 
 
 class MissingParameterException(Exception):
-    """Raised when a usually optional parameter is needed but not available"""
+    """Raised when a usually optional parameter is needed but not available, or when its value is incorrect"""
     pass

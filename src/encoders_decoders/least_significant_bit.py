@@ -40,23 +40,26 @@ def encode(cover_path: str, data_to_hide: str, stego_path: str, encode_type: Enc
             case EncodeType.INLINE:
                 positions: list[tuple] = _get_positions(
                     image_width=width,
+                    image_height=height,
                     header_length=header_length,
                     with_header=True,
+                    original_data_length=data_length,
                     final_data=final_data,
                 )
             case EncodeType.EQUI_DISTRIBUTION:
                 positions: list[tuple] = _get_positions(
                     image_width=width,
+                    image_height=height,
                     header_length=header_length,
                     with_header=True,
+                    original_data_length=data_length,
                     final_data=final_data,
                     space_between_bits=_define_equidistant_space(
                         image_width=width, image_height=height, data_length=data_length, header_length=header_length
                     ),
                 )
-
         for w, h, rgb, b in positions:
-            pixel = img.getpixel((w, h))
+            pixel = list(img.getpixel((w, h)))
             pixel[rgb] = pixel[rgb] & ~1 | b
             img.putpixel((w, h), tuple(pixel))
 
@@ -84,7 +87,9 @@ def decode(stego_path: str, encode_type: EncodeType) -> str:
         header_length: int = _define_header_length(width, height)
 
         header_in_binary: str = ""
-        header_positions: list[tuple] = _get_positions(image_width=width, header_length=header_length, with_header=True)
+        header_positions: list[tuple] = _get_positions(
+            image_width=width, image_height=height, header_length=header_length, with_header=True
+        )
         for w, h, rgb in header_positions:
             pixel = img.getpixel((w, h))
             header_in_binary += str(pixel[rgb] & 1)
@@ -94,11 +99,16 @@ def decode(stego_path: str, encode_type: EncodeType) -> str:
         match encode_type:
             case EncodeType.INLINE:
                 data_positions: list[tuple] = _get_positions(
-                    image_width=width, header_length=header_length, with_header=False, original_data_length=data_length
+                    image_width=width,
+                    image_height=height,
+                    header_length=header_length,
+                    with_header=False,
+                    original_data_length=data_length,
                 )
             case EncodeType.EQUI_DISTRIBUTION:
                 data_positions: list[tuple] = _get_positions(
                     image_width=width,
+                    image_height=height,
                     header_length=header_length,
                     with_header=False,
                     original_data_length=data_length,
@@ -175,11 +185,12 @@ def _define_equidistant_space(image_width: int, image_height: int, data_length: 
     image_dimension: int = image_width * image_height
     max_data_length: int = (image_dimension * 3) - header_length
     space_between_bits: int = max_data_length // data_length
-    return space_between_bits + 1
+    return space_between_bits
 
 
 def _get_positions(
     image_width: int,
+    image_height: int,
     header_length: int,
     with_header: bool,
     original_data_length: int = 0,
@@ -192,6 +203,7 @@ def _get_positions(
     Parameters
     ----------
     image_width: Width of the image
+    image_height: Height of the image
     header_length: Calculated Length of the header
     with_header: Boolean to specify if the position of the header bit are to be returned
     original_data_length (optional): Length of binary data to hide (without header)
@@ -208,16 +220,16 @@ def _get_positions(
         raise MissingParameterException("header_length cannot be 0.")
 
     if final_data and len(final_data) - header_length != original_data_length:
-        raise MissingParameterException("The length of final_data, the original_data_length and the header_length do not add up")
+        raise MissingParameterException(
+            "The length of final_data, the original_data_length and the header_length do not add up"
+        )
 
     positions: list[int] = []
     if with_header:
         positions.extend(range(header_length))
     if original_data_length > 0:
         positions.extend(
-            range(
-                header_length, header_length + (space_between_bits * (original_data_length - 1)) + 1, space_between_bits
-            )
+            range(header_length, (image_height * image_width * 3) + 1, space_between_bits)[:original_data_length]
         )
     if not positions:
         raise MissingParameterException("Positions empty!!! Please include with_header or/and original_data_length.")
