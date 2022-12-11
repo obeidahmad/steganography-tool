@@ -55,13 +55,13 @@ Similar to what was explained before, we loop on each pixel individually and eac
 
 ### Equi-Distribution LSB
 
-The tool offers as well Equi-Distribution LSB.
-Instead of hiding the data inline (pixel after pixel, color after color), we distribute the data.
+The tool offers as well `Equi-Distribution LSB Steganography`.
+Instead of hiding the data inline (pixel after pixel, channel after channel), we distribute the data.
 Figuratively, the image is transformed into a matrix of width = image_width * 3 and height = image_height.
 After figuring the space taken for the header (which is always stored at the start of the image)
 we calculate the space needed for equi-distribution between each bit.
 From there the position of each bit is calculated and placed in the matrix.
-The matrix is then translated to a series of coordinates for row, column and rgb position.
+The matrix is then translated to a series of coordinates for row, column and rgba channel.
 Each coordinate represents the pixel and channel in which a bit is hidden.
 
 Same calculations are used for decoding.
