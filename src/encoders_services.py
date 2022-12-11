@@ -6,7 +6,9 @@ from utils.custom_exceptions import IncorrectFileTypeException, MissingParameter
 from utils.utilities import file_to_binary, string_to_binary, binary_to_string, binary_to_file
 
 
-def least_significant_bit_encode(cover_path: str, data: str, stego_path: str, encode_type: EncodeType, file: bool = True):
+def least_significant_bit_encode(
+    cover_path: str, data: str, stego_path: str, encode_type: EncodeType, file: bool = True
+):
     if file:
         if not os.path.exists(data):
             raise FileNotFoundError(f"'{data}' not found")
@@ -19,11 +21,11 @@ def least_significant_bit_encode(cover_path: str, data: str, stego_path: str, en
         raise IncorrectFileTypeException("Stego File name should be a png")
     os.makedirs(os.path.dirname(stego_path), exist_ok=True)
 
-    lsb.encode(cover_path, binary_data, stego_path, encode_type)
+    lsb.encode(cover_path=cover_path, data_to_hide=binary_data, stego_path=stego_path, encode_type=encode_type)
 
 
-def least_significant_bit_decode(stego_path: str, result_file_path: str = None) -> str | None:
-    binary = lsb.decode(stego_path)
+def least_significant_bit_decode(stego_path: str, encode_type: EncodeType, result_file_path: str = None) -> str | None:
+    binary = lsb.decode(stego_path=stego_path, encode_type=encode_type)
     if binary.startswith("0"):
         return binary_to_string(binary[1:])
     else:

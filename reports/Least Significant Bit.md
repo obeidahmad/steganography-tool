@@ -54,4 +54,5 @@ In addition, the maximal data size that can be hidden in this image is 432 - 9 -
 
 ## TODO
 
+1. Write and explain Equidistant LSB
 1. Read [An Enhanced Least Significant Bit Steganography Method Using Midpoint Circle Approach](https://drive.google.com/file/d/1ElOvCFtjC5TPs9mUzla7P0DiQA2c1Irw/view?usp=sharing)
