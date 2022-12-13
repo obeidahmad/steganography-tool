@@ -96,7 +96,7 @@ def decode(stego_path: str, encode_type: EncodeType) -> str:
     with Image.open(stego_path) as img:
         width, height = img.size
         nb_channels: int = len(img.mode)
-        header_length: int = _define_header_length(width, height)
+        header_length: int = _define_header_length(image_width=width, image_height=height, nb_channels=nb_channels)
 
         header_in_binary: str = ""
         header_positions: list[tuple] = _get_positions(
