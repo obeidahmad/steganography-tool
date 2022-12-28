@@ -1,5 +1,5 @@
 class IncorrectFileTypeException(Exception):
-    """Raised when the file type (extension) is incorrect"""
+    """Raised when the file type (or extension) is incorrect"""
     pass
 
 

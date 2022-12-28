@@ -3,8 +3,6 @@ import einops
 import numpy as np
 from numpy import ndarray
 
-from utils.utilities import string_to_binary, binary_to_string
-
 
 def encode(cover_image: ndarray, data_to_hide: str, block_size: int = 8) -> ndarray:
     """
@@ -73,6 +71,7 @@ def encode(cover_image: ndarray, data_to_hide: str, block_size: int = 8) -> ndar
 
     return stego_image
 
+
 def decode(stego_image: ndarray, block_size: int = 8) -> str:
     """
     Decode data into image using F5 algorithm
@@ -116,17 +115,8 @@ def decode(stego_image: ndarray, block_size: int = 8) -> str:
         dct = cv2.dct(np.float32(block))
         num = float(dct[-1][-1])
         if float(dct[-1][-1]) < 7.5:
-            hidden_data += '0'
+            hidden_data += "0"
         else:
-            hidden_data += '1'
+            hidden_data += "1"
 
     return hidden_data
-
-stego = encode(
-    cv2.imread("/home/meeddoh/PycharmProjects/steganography-tool/test_files/clean.png"), string_to_binary("Coucou")
-)
-cv2.imwrite("/home/meeddoh/PycharmProjects/steganography-tool/test_files/stego_f5.png", stego)
-
-message = binary_to_string(decode(cv2.imread("/home/meeddoh/PycharmProjects/steganography-tool/test_files/stego_f5.png")))
-
-print(message)

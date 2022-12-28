@@ -18,7 +18,7 @@ def string_to_binary(string: str) -> str:
     return "".join(int_to_binary(ord(c), 8) for c in string)
 
 
-def binary_to_string(binary) -> str:
+def binary_to_string(binary: str) -> str:
     return "".join([chr(int(c, 2)) for c in [binary[i : i + 8] for i in range(0, len(binary), 8)]])
 
 

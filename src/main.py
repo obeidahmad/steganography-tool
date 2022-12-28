@@ -1,5 +1,5 @@
 from encoders_decoders.least_significant_bit import EncodeType
-from encoders_services import least_significant_bit_encode, least_significant_bit_decode
+from encoders_decoders_services import least_significant_bit_encode, least_significant_bit_decode
 import os
 
 project_path: str = os.path.abspath("")
