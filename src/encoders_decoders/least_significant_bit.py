@@ -15,7 +15,7 @@ def _define_header_length(image_width: int, image_height: int, nb_channels: int)
 
     Returns
     -------
-    Returns the length of the header (number of bits it needs)
+    The length of the header (number of bits it needs)
 
     """
     image_dimension: int = image_width * image_height
@@ -30,7 +30,7 @@ def _define_equidistant_space(
     """
     Calculates the space between each bit for Equi_Distribution LSB
     Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md/#equi-distribution-lsb
-        for more info about equidistant LSB
+        for more info about Equi_Distribution LSB
 
     Parameters
     ----------
@@ -51,16 +51,73 @@ def _define_equidistant_space(
     return space_between_bits
 
 
+def _get_midpoint_circle_positions(image_width: int, image_height: int) -> set[tuple[int, int]]:
+    """
+    Generates the positions of the pixel where data will be hidden using Midpoint Circle LSB
+    Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md/#midpoint-circle-lsb
+        for more info about Midpoint Circle LSB
+
+    Parameters
+    ----------
+    image_width: Width of the image
+    image_height: Height of the image
+
+    Returns
+    -------
+    The set of positions (x,y) of the pixels where data will be hidden
+
+    """
+    x_center: int = (image_width - 1) // 2
+    y_center: int = (image_height - 1) // 2
+    radius: int = min(x_center, y_center)
+
+    positions: set[tuple[int, int]] = set()
+
+    x: int = radius
+    y: int = 0
+    positions.add((x + x_center, y + y_center))
+    if radius > 0:
+        positions.add((x + x_center, -y + y_center))
+        positions.add((y + x_center, x + y_center))
+        positions.add((-y + x_center, x + y_center))
+
+    perimeter: int = 1 - radius
+    while x > y:
+        y += 1
+        if perimeter <= 0:
+            perimeter = perimeter + 2 * y + 1
+        else:
+            x -= 1
+            perimeter = perimeter + 2 * y - 2 * x + 1
+        if x < y:
+            break
+        positions.add((x + x_center, y + y_center))
+        positions.add((-x + x_center, y + y_center))
+        positions.add((x + x_center, -y + y_center))
+        positions.add((-x + x_center, -y + y_center))
+        if x != y:
+            positions.add((y + x_center, x + y_center))
+            positions.add((-y + x_center, x + y_center))
+            positions.add((y + x_center, -x + y_center))
+            positions.add((-y + x_center, -x + y_center))
+
+    return positions
+
+
 def inline_encode(cover_image: ndarray, data_to_hide: str):
     """
-    Hides data in cover image using Inline LSB technics
+    Hides data in cover image using Inline LSB
     Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md/#inline-lsb
         for more info about Inline LSB
 
     Parameters
     ----------
-    cover_image: Image loaded with OpenCV
+    cover_image: Cover Image in numpy array format
     data_to_hide: Data to hide in binary string format
+
+    Returns
+    -------
+    Stego Image in numpy array format
 
     """
     width, height, channels = cover_image.shape
@@ -83,7 +140,7 @@ def inline_decode(stego_image: ndarray) -> str:
 
     Parameters
     ----------
-    stego_image: Stego image loaded with OpenCV
+    stego_image: Stego image in numpy array format
 
     Returns
     -------
@@ -103,14 +160,18 @@ def inline_decode(stego_image: ndarray) -> str:
 
 def equi_distribution_encode(cover_image: ndarray, data_to_hide: str):
     """
-    Hides data in cover image using Equi-Distribution LSB technics
+    Hides data in cover image using Equi-Distribution LSB
     Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md/#equi-distribution-lsb
         for more info about Equi-Distribution LSB
 
     Parameters
     ----------
-    cover_image: Image loaded with OpenCV
+    cover_image: Cover Image in numpy array format
     data_to_hide: Data to hide in binary string format
+
+    Returns
+    -------
+    Stego Image in numpy array format
 
     """
     width, height, channels = cover_image.shape
@@ -149,7 +210,7 @@ def equi_distribution_decode(stego_image: ndarray) -> str:
 
     Parameters
     ----------
-    stego_image: Stego image loaded with OpenCV
+    stego_image: Stego image in numpy array format
 
     Returns
     -------
@@ -183,5 +244,62 @@ def equi_distribution_decode(stego_image: ndarray) -> str:
     hidden_data: str = ""
     for index in positions:
         hidden_data += str(flattened_image[index] & 1)
+
+    return hidden_data
+
+
+def midpoint_circle_encode(cover_image: ndarray, data_to_hide: str):
+    """
+    Hides data in cover image using Midpoint Circle LSB
+    Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md/#midpoint-circle-lsb
+        for more info about Midpoint Circle LSB
+
+    Parameters
+    ----------
+    cover_image: Cover Image in numpy array format
+    data_to_hide: Data to hide in binary string format
+
+    Returns
+    -------
+    Stego Image in numpy array format
+
+    """
+    width, height, channels = cover_image.shape
+    positions: set[tuple[int, int]] = _get_midpoint_circle_positions(image_width=width, image_height=height)
+
+    stego_image: ndarray = cover_image.copy()
+    index = 0
+    for (x_index, y_index) in positions:
+        for chn_index in range(channels):
+            stego_image[x_index][y_index][chn_index] = stego_image[x_index][y_index][chn_index] & ~1 | int(
+                data_to_hide[index]
+            )
+            index += 1
+
+    return stego_image
+
+
+def midpoint_circle_decode(stego_image: ndarray) -> str:
+    """
+    Extracts hidden data from stego image using Midpoint Circle LSB
+    Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md/#midpoint-circle-lsb
+        for more info about Midpoint Circle LSB
+
+    Parameters
+    ----------
+    stego_image: Stego image in numpy array format
+
+    Returns
+    -------
+    The hidden data in string format
+
+    """
+    width, height, channels = stego_image.shape
+    positions: set[tuple[int, int]] = _get_midpoint_circle_positions(image_width=width, image_height=height)
+
+    hidden_data: str = ""
+    for (x_index, y_index) in positions:
+        for chn_index in range(channels):
+            hidden_data += str(stego_image[x_index][y_index][chn_index] & 1)
 
     return hidden_data

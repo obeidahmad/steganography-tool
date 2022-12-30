@@ -31,7 +31,7 @@ def least_significant_bit_encode(cover_path: str, data: str, stego_path: str, en
             max_size_data: int = width * height * channels
             if len(binary_data) >= max_size_data:
                 raise DataTooLongException(
-                    "Stego data length is bigger than cover image capacity for Inline LSB Algorithm."
+                    f"Stego data length is bigger than cover image capacity for {encode_type.capitalize()} LSB Algorithm."
                 )
             binary_data = str(int(file)) + binary_data.zfill(max_size_data - 1)
             stego_image: ndarray = lsb.inline_encode(cover_image=image, data_to_hide=binary_data)
@@ -39,10 +39,20 @@ def least_significant_bit_encode(cover_path: str, data: str, stego_path: str, en
             max_size_data: int = (width * height * channels) - lsb._define_header_length(width, height, channels)
             if len(binary_data) >= max_size_data:
                 raise DataTooLongException(
-                    "Stego data length is bigger than cover image capacity for Equi-Distribution LSB Algorithm."
+                    f"Stego data length is bigger than cover image capacity for {encode_type.capitalize()} LSB Algorithm."
+                )
+            binary_data = str(int(file)) + binary_data
+            stego_image: ndarray = lsb.equi_distribution_encode(cover_image=image, data_to_hide=binary_data)
+        case LSBTechnics.MIDPOINT_CIRCLE:
+            max_size_data: int = (
+                len(lsb._get_midpoint_circle_positions(image_width=width, image_height=height)) * channels
+            )
+            if len(binary_data) >= max_size_data:
+                raise DataTooLongException(
+                    f"Stego data length is bigger than cover image capacity for {encode_type.capitalize()} LSB Algorithm."
                 )
             binary_data = str(int(file)) + binary_data.zfill(max_size_data - 1)
-            stego_image: ndarray = lsb.equi_distribution_encode(cover_image=image, data_to_hide=binary_data)
+            stego_image: ndarray = lsb.midpoint_circle_encode(cover_image=image, data_to_hide=binary_data)
 
     cv2.imwrite(stego_path, stego_image)
 
@@ -57,6 +67,8 @@ def least_significant_bit_decode(stego_path: str, encode_type: str, result_file_
             binary_data: str = lsb.inline_decode(stego_image=image)
         case LSBTechnics.EQUI_DISTRIBUTION:
             binary_data: str = lsb.equi_distribution_decode(stego_image=image)
+        case LSBTechnics.MIDPOINT_CIRCLE:
+            binary_data: str = lsb.midpoint_circle_decode(stego_image=image)
 
     if binary_data.startswith("0"):
         binary_data = binary_data[1:].lstrip("0")

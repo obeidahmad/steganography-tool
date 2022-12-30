@@ -23,54 +23,34 @@ To decode an encoded image, we simply reverse the process.
 Collect and store the last bits of each pixel then split them into groups of 8
 and convert it back to ASCII characters to get the hidden message.
 
-## How are we implementing it?
-
-The steps for encoding are the following:
-1. Take any image supported by pillow python package as input
-2. Calculate the header space with the following: `header_size = length(binary(w\*h\*c))`
-3. If the data to be hidden is a string add bit `0` at the beginning, if the data was a file add `1`
-4. Check if data fits in the image, where the max data is: `w\*h\*c - header_size - 1` *[1 being the extra bit added depending on the type of data]*
-5. Calculate the length of the data and store in header
-6. Loop on each pixel of the image to alter the LSB of each color and hide the data
-
-The steps for decoding are the same but in reverse.
-
-Where:
-- w: Image Width
-- h: Image Height
-- c: Number of Channels
-
-| ![12x12-pixels-image-simple-representation](./media/12x12-pixels-image-simple-representation.png) | 
-|:--:| 
-| **Figure 2:** *RGB Image of size 12x12px* |
-
-Calculating the header for the image above (**figure 2**) would be as following:
-
-- w\*h\*c = 12\*12\*3 = 432 bits
-- binary(432) = 1 1011 0000
-- length(1 1011 0000) = 9 bits
-- And thus the header length is 9 bits
-
-In addition, the maximal data size that can be hidden in this image is 432 - 9 - 1 = 422 bits
-
-### Inline LSB:
+### Inline LSB _[1]_:
 
 Our tool offers `Simple Inline LSB Steganography`.
-Similar to what was explained before, we loop on each pixel individually and each channel in that pixel to change the LSB of that channel.
+The data to be hidden is transformed to binary then it is padded with zeros to become as big as the maximal data size
+that the data can retain. We then loop on each pixel's channel to hide one bit of the data.
 
-### Equi-Distribution LSB
+Decoding is the same, after the data is extracted the padding of zeros is removed.
+
+### Equi-Distribution LSB:
 
 The tool offers as well `Equi-Distribution LSB Steganography`.
 Instead of hiding the data inline _- pixel after pixel, channel after channel -_ we distribute the data.
-Figuratively, the image is transformed into a matrix of `width = w*c` and `height = h`.
-After figuring the space taken for the header _- which is always stored at the start of the image -_
+After figuring the space taken for the header _- always stored at the start of the image and contains the size of the data-_
 we calculate the space needed for equi-distribution between each bit.
 From there the position of each bit is calculated and placed in the matrix.
-The matrix is then translated to a series of coordinates for row, column and channel.
-Each coordinate represents the pixel and channel in which a bit is hidden.
 
 Same calculations are used for decoding.
 
-## TODO
 
-1. Read [An Enhanced Least Significant Bit Steganography Method Using Midpoint Circle Approach](https://drive.google.com/file/d/1ElOvCFtjC5TPs9mUzla7P0DiQA2c1Irw/view?usp=sharing)
+### Midpoint Circle LSB _[2]_:
+
+The tool offers as well `Midpoint Circle LSB Steganography`.
+In this method, the data is hidden on a circle created using Midpoint Circle Drawing Algorithm.
+The center of the image is used as the center of the circle,
+the minimum distance from that center to a side of the image is the radius.
+
+Same for decoding
+
+## References
+1. C.-K. Chan and L.M. Cheng, "Hiding data in images by simple LSB substitution," _Pattern Recognition, 37(3)_, 2004, pp. 469–474, doi: 10.1016/j.patcog.2003.08.007
+2. V. Verma, Poonam and R. Chawla, "An enhanced Least Significant Bit steganography method using midpoint circle approach," _2014 International Conference on Communication and Signal Processing_, 2014, pp. 105-108, doi: 10.1109/ICCSP.2014.6949808
