@@ -1,3 +1,5 @@
+import math
+
 from numpy import ndarray
 
 from utils.utilities import int_to_binary, binary_to_int
@@ -51,7 +53,7 @@ def _define_equidistant_space(
     return space_between_bits
 
 
-def _get_midpoint_circle_positions(image_width: int, image_height: int) -> set[tuple[int, int]]:
+def _get_midpoint_circle_positions(image_width: int, image_height: int, clockwise: bool = True) -> list[tuple[int, int]]:
     """
     Generates the positions of the pixel where data will be hidden using Midpoint Circle LSB
     Refer to https://github.com/obeidahmad/steganography-tool/blob/main/src/reports/Least%20Significant%20Bit.md/#midpoint-circle-lsb
@@ -64,7 +66,7 @@ def _get_midpoint_circle_positions(image_width: int, image_height: int) -> set[t
 
     Returns
     -------
-    The set of positions (x,y) of the pixels where data will be hidden
+    The list of positions (x,y) of the pixels where data will be hidden sorted clockwise or counter-clockwise
 
     """
     x_center: int = (image_width - 1) // 2
@@ -101,6 +103,9 @@ def _get_midpoint_circle_positions(image_width: int, image_height: int) -> set[t
             positions.add((y + x_center, -x + y_center))
             positions.add((-y + x_center, -x + y_center))
 
+    direction: int = 1 if clockwise else -1
+    positions: list[tuple[int, int]] = list(positions)
+    positions.sort(key=lambda pos: direction * math.atan2(pos[1] - x_center, pos[0] - y_center))
     return positions
 
 
@@ -295,7 +300,7 @@ def midpoint_circle_decode(stego_image: ndarray) -> str:
 
     """
     width, height, channels = stego_image.shape
-    positions: set[tuple[int, int]] = _get_midpoint_circle_positions(image_width=width, image_height=height)
+    positions: list[tuple[int, int]] = _get_midpoint_circle_positions(image_width=width, image_height=height)
 
     hidden_data: str = ""
     for (x_index, y_index) in positions:
