@@ -270,7 +270,7 @@ def midpoint_circle_encode(cover_image: ndarray, data_to_hide: str):
 
     """
     width, height, channels = cover_image.shape
-    positions: set[tuple[int, int]] = _get_midpoint_circle_positions(image_width=width, image_height=height)
+    positions: list[tuple[int, int]] = _get_midpoint_circle_positions(image_width=width, image_height=height)
 
     stego_image: ndarray = cover_image.copy()
     index = 0
